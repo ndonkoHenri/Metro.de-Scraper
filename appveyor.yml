@@ -11,6 +11,7 @@ environment:
     secure: Ti46nPnZgFh0nRteU6ma0EhJnCTW7PaMn9hnnewZl4gBFPyRQnXNCwGog02+MRLX
 
 install:
+- pip install pyinstaller
 - pip install -r requirements.txt
 
 build_script:
