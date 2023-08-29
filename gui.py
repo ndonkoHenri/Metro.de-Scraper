@@ -117,7 +117,7 @@ def main(page: ft.Page):
 
         print(x)
         page.set_clipboard(x)
-        page.show_snack_bar(ft.SnackBar(ft.Text(f"Copied logs to clipboard!"), open=True, duration=10000, action="OK"))
+        page.show_snack_bar(ft.SnackBar(ft.Text(f"Copied logs to clipboard!"), duration=10000, action="OK"))
 
     def delete_all_logs(e):
         """
@@ -127,7 +127,7 @@ def main(page: ft.Page):
         """
         col.controls.clear()
         page.update()
-        page.show_snack_bar(ft.SnackBar(ft.Text(f"All logs were deleted!"), open=True, duration=10000, action="OK"))
+        page.show_snack_bar(ft.SnackBar(ft.Text(f"All logs were deleted!"), duration=10000, action="OK"))
 
     fp = ft.FilePicker(on_result=fp_result)
     page.overlay.append(fp)
