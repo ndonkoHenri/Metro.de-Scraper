@@ -5,6 +5,7 @@ import time
 import pandas as pd
 from openpyxl import Workbook
 from openpyxl.styles import Font, Color
+import flet as ft
 
 failures = []
 error_counter = 0
@@ -62,9 +63,14 @@ def read_source(path):
     The first column of the dataframe with header row 'source' contains the needed data.
     """
     df = pd.read_excel(path)
-    article_number_col = df["Metro articlenumber"]
-    links_col = df["Link"]
-    return article_number_col, links_col
+
+    article_number_col = df["Metro Artikelnummer"] # important: make sure the name of the first column is correctly written
+    links_col = df["Link"]      # important: make sure the name of the second column is correctly written
+    
+    # the number of rows in the excel file - this will be used to show operation progression
+    max_row_count = max(df.count().to_list())
+
+    return article_number_col, links_col, max_row_count
 
 
 def summarize(td):
@@ -153,7 +159,7 @@ def write_log(text):
     logs_cache.append(f"- {text}\n")
 
 
-def start_automation(browser: Browser, source_path: str = "source.xlsx", destination_path: str = "Result.xlsx"):
+def start_automation(browser: Browser, page:ft.Page=None, source_path: str = "source.xlsx", destination_path: str = "Result.xlsx"):
     """
     Main start point.
     It calls the necessary functions, starts the scraping, saves and summarizes.
@@ -166,13 +172,18 @@ def start_automation(browser: Browser, source_path: str = "source.xlsx", destina
         write_log(f"Automation Initialization on the {time.strftime('%d.%m.%Y - %H:%M %p')}")
         write_log(f"{source_path=} | {destination_path=}")
 
-        article_number_col, links_col = read_source(source_path)
+        article_number_col, links_col, max_row_count = read_source(source_path)
 
         browser.visit("https://produkte.metro.de/shop/")
 
         reject_cookies(browser)
 
         wb, ws = prepare_result_worksheet(destination_path)
+
+        # set the progress bar value to zero (operation initialisation)
+        if page:
+            page.splash.value = page.window_progress_bar = 0
+            page.update()
 
         for count, source_info in enumerate(zip(article_number_col, links_col), start=2):
             s_number, s_link = source_info
@@ -218,6 +229,16 @@ def start_automation(browser: Browser, source_path: str = "source.xlsx", destina
             else:
                 ws.append([s_number, "IGNORED", "IGNORED"])
 
+            # update the progress bar value to reflect progression
+            if page:
+                page.splash.value = page.window_progress_bar = (count-1)/max_row_count
+                page.update()
+
+        # set the progress bar value to 1 (operation completed)
+        if page:
+            page.splash.value = 1
+            page.update()
+
         # if there are some articles in sales/promotion -> change the color of the price to red (kind of notifier)
         if articles_in_promotion:
             for i in articles_in_promotion:
@@ -231,7 +252,7 @@ def start_automation(browser: Browser, source_path: str = "source.xlsx", destina
 
     except Exception as e:
         write_log(e)
-        write_log(f"{time.strftime('%H:%M %p')} | Etwas ist leider schiefgelaufen! Versuch es noch mal bitte.")
+        write_log(f"{time.strftime('%H:%M %p')} | Seems like something went wrong :(, please retry.")
     finally:
         browser.quit()  # close browser session
         return logs_cache
