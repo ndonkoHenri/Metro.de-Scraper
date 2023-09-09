@@ -15,16 +15,16 @@ def main(page: ft.Page):
     # page settings/configurations
     page.title = "Metro Scraper"
     page.window_center()
-    page.window_height, page.window_width = 520, 488
-    page.window_min_height, page.window_min_width = 420, 498
+    page.window_height, page.window_width = 540, 488
+    page.window_min_height, page.window_min_width = 450, 498
     page.vertical_alignment = page.horizontal_alignment = "center"
     page.theme_mode = ft.ThemeMode.LIGHT
     page.splash = ft.ProgressBar(value=0)
     page.spacing, page.padding = 20, 10
     page.scroll = ft.ScrollMode.HIDDEN
 
-    page.window_visible = True
-    page.update()
+    # page.window_visible = True
+    # page.update()
 
     def fp_result(e: ft.FilePickerResultEvent):
         # pick files
@@ -243,5 +243,5 @@ def main(page: ft.Page):
 
 ft.app(
     main,
-    view=ft.AppView.FLET_APP_HIDDEN
+    # view=ft.AppView.FLET_APP_HIDDEN
 )
