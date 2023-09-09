@@ -13,8 +13,8 @@ install:
 - pip install pyinstaller
 - pip install -r requirements.txt
 
-build_script:
-- flet pack gui.py --name "Metro Scraper" --product-name "Metro Scraper" --add-data "./utils.py;utils.py" --product-version "1.1" --copyright "Copyright (c) 2023 TheEthicalBoy"
+#build_script:
+#- flet pack gui.py --name "Metro Scraper" --product-name "Metro Scraper" --add-data "./utils.py;utils.py" --product-version "1.1" --copyright "Copyright (c) 2023 TheEthicalBoy"
 
 test: off
 
@@ -33,6 +33,9 @@ for:
   matrix:
     only:
     - image: Visual Studio 2019
+  
+  before_build:
+  - flet pack gui.py --name "Metro Scraper" --product-name "Metro Scraper" --add-data "./utils.py;utils.py" --product-version "1.1" --copyright "Copyright (c) 2023 TheEthicalBoy"
 
   after_build:
   - 7z a metro-scraper-windows.zip %CD%\dist\*.exe
@@ -48,6 +51,13 @@ for:
     only:
     - image: macOS
 
+  before_build:
+    - flet pack gui.py --name "Metro Scraper" --product-name "Metro Scraper" --add-data "./utils.py:utils.py" --product-version "1.1" --copyright "Copyright (c) 2023 TheEthicalBoy"
+
+
   after_build:
   - tar -czvf metro-scraper-macos.tar.gz -C dist metro-scraper.app
+
+  artifacts:
+  - path: metro-scraper-macos.tar.gz
 
