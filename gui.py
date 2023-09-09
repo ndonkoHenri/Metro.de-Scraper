@@ -1,6 +1,6 @@
 import flet as ft
 from splinter import Browser
-import utils
+from utils import MetroScraper
 import time
 
 
@@ -22,6 +22,7 @@ def main(page: ft.Page):
     page.splash = ft.ProgressBar(value=0)
     page.spacing, page.padding = 20, 10
     page.scroll = ft.ScrollMode.HIDDEN
+
     page.window_visible = True
     page.update()
 
@@ -63,7 +64,8 @@ def main(page: ft.Page):
             col.controls.append(ft.Text(f"Starting Automation at {time.strftime('%H:%M:%S')}"))
             page.update()
 
-            logs = utils.start_automation(browser, page, paths.src_path, paths.dst_path)
+            metro_scraper = MetroScraper(browser, page, paths.src_path, paths.dst_path)
+            logs = metro_scraper.logs_cache
 
         # show logs on UI
         if logs:
@@ -153,7 +155,7 @@ def main(page: ft.Page):
                         allowed_extensions=["xlsx"]
                     ),
                     bgcolor=ft.colors.GREEN_300,
-                    tooltip="dok einreichen",
+                    tooltip="choose file",
                     mini=True
                 )
             ],
@@ -183,7 +185,7 @@ def main(page: ft.Page):
                         allowed_extensions=["xlsx"]
                     ),
                     bgcolor=ft.colors.GREEN_300,
-                    tooltip="load document",
+                    tooltip="choose file",
                     mini=True
                 )
             ],
