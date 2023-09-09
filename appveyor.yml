@@ -1,6 +1,5 @@
 image:
 - Visual Studio 2019
-- macOS
 
 skip_branch_with_pr: true
 stack: python 3.10
@@ -14,7 +13,7 @@ install:
 - pip install -r requirements.txt
 
 build_script:
-- flet pack gui.py --name "Metro Scraper" --product-name "Metro Scraper" --product-version "1.1" --copyright "Copyright (c) 2023 TheEthicalBoy"
+- flet pack gui.py --name "Metro Scraper" --product-name "Metro Scraper" --add-data "./utils.py;utils.py" --product-version "1.1" --copyright "Copyright (c) 2023 TheEthicalBoy"
 
 test: off
 
@@ -40,17 +39,4 @@ for:
   artifacts:
   - path: metro-scraper-windows.zip
 
-#
-#   macOS package
-# 
--
-  matrix:
-    only:
-    - image: macOS
-
-  after_build:
-  - tar -czvf metro-scraper-macos.tar.gz -C dist metro-scraper.app
-
-  artifacts:
-  - path: metro-scraper-macos.tar.gz
 
