@@ -1,7 +1,6 @@
 image:
 - Visual Studio 2019
 - macOS
-- Ubuntu
 
 skip_branch_with_pr: true
 stack: python 3.10
@@ -12,10 +11,11 @@ environment:
 
 install:
 - pip install pyinstaller
+- python.exe -m pip install --upgrade pip
 - pip install -r requirements.txt
 
 build_script:
-- flet pack gui.py --name "Metro Scraper" --product-name "Metro Scraper" --product-version "1.0" --copyright "Copyright (c) 2023 TheEthicalBoy"
+- flet pack gui.py --name "Metro Scraper" --product-name "Metro Scraper" --product-version "1.1" --copyright "Copyright (c) 2023 TheEthicalBoy"
 
 test: off
 
@@ -54,18 +54,4 @@ for:
 
   artifacts:
   - path: metro-scraper-macos.tar.gz
-
-#
-#   Linux package
-# 
--
-  matrix:
-    only:
-    - image: Ubuntu
-
-  after_build:
-  - tar -czvf metro-scraper-linux.tar.gz -C dist metro-scraper
-
-  artifacts:
-  - path: metro-scraper-linux.tar.gz
 
