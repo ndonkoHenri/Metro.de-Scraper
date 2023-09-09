@@ -1,5 +1,6 @@
 image:
 - Visual Studio 2019
+- macOS
 
 skip_branch_with_pr: true
 stack: python 3.10
@@ -39,4 +40,14 @@ for:
   artifacts:
   - path: metro-scraper-windows.zip
 
+#
+#   macOS package
+#
+-
+  matrix:
+    only:
+    - image: macOS
+
+  after_build:
+  - tar -czvf metro-scraper-macos.tar.gz -C dist metro-scraper.app
 

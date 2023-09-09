@@ -23,8 +23,8 @@ def main(page: ft.Page):
     page.spacing, page.padding = 20, 10
     page.scroll = ft.ScrollMode.HIDDEN
 
-    # page.window_visible = True
-    # page.update()
+    page.window_visible = True
+    page.update()
 
     def fp_result(e: ft.FilePickerResultEvent):
         # pick files
@@ -243,5 +243,5 @@ def main(page: ft.Page):
 
 ft.app(
     main,
-    # view=ft.AppView.FLET_APP_HIDDEN
+    view=ft.AppView.FLET_APP_HIDDEN
 )
