@@ -34,7 +34,7 @@ for:
     only:
     - image: Visual Studio 2019
   
-  before_build:
+  build_script:
   - flet pack gui.py --name "Metro Scraper" --product-name "Metro Scraper" --add-data "./utils.py;utils.py" --product-version "1.1" --copyright "Copyright (c) 2023 TheEthicalBoy"
 
   after_build:
@@ -51,7 +51,7 @@ for:
     only:
     - image: macOS
 
-  before_build:
+  build_script:
     - flet pack gui.py --name "Metro Scraper" --product-name "Metro Scraper" --add-data "./utils.py:utils.py" --product-version "1.1" --copyright "Copyright (c) 2023 TheEthicalBoy"
 
 
