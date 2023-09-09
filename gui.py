@@ -3,84 +3,72 @@ from splinter import Browser
 import utils
 import time
 
-src_path = ""
-dst_path = ""
 
-# todo: make the progress bar show the automation's progression in real time instead of it being inderteminate
+class Paths:
+    src_path = ""
+    dst_path = ""
 
 
 def main(page: ft.Page):
-    global src_path, dst_path
-    
+    paths = Paths()
+
     # page settings/configurations
     page.title = "Metro Scraper"
-    page.vertical_alignment = ft.CrossAxisAlignment.CENTER
-    page.horizontal_alignment = ft.MainAxisAlignment.CENTER
-    page.theme_mode = ft.ThemeMode.LIGHT
-    page.splash = ft.ProgressBar(visible=False)
+    page.window_center()
     page.window_height, page.window_width = 520, 488
     page.window_min_height, page.window_min_width = 420, 498
+    page.vertical_alignment = page.horizontal_alignment = "center"
+    page.theme_mode = ft.ThemeMode.LIGHT
+    page.splash = ft.ProgressBar(value=0)
     page.spacing, page.padding = 20, 10
     page.scroll = ft.ScrollMode.HIDDEN
-    page.window_center()
+    page.window_visible = True
+    page.update()
 
     def fp_result(e: ft.FilePickerResultEvent):
-        global src_path, dst_path
-
         # pick files
         if e.files:
             src_text.value = e.files[0].name
-            src_path = e.files[0].path
+            paths.src_path = e.files[0].path
         elif e.path:
             a = e.path.split("\\")[-1]
             if ".xlsx" in a:
                 dst_text.value = a
-                dst_path = e.path
+                paths.dst_path = e.path
             else:
                 dst_text.value = a + ".xlsx"
-                dst_path = e.path + ".xlsx"
+                paths.dst_path = e.path + ".xlsx"
 
         # makes sure the user gave the source and destination paths; if yes enable the buttons for automation run
-        if src_path and dst_path:
+        if paths.src_path and paths.dst_path:
             row.disabled = False
 
         page.update()
 
-    def start_automation(e: ft.ControlEvent):
+    def start_automation(driver_name: str):
         """
         The start_automation function is called when the user clicks on the 'Run Automation *' buttons at the top.
         It takes in a browser name as an argument and starts automation using that browser.
 
-
-        Args:
-            e: contains useful data on the control that triggered this function
-
         Returns:
             The logs and the browser object
         """
-        page.splash.visible = True
+        page.splash.value = 0
         row.disabled = True
         page.update()
-        page.show_snack_bar(
-            ft.SnackBar(
-                ft.Text(f"Running automation on your {e.control.data} browser..."),
-                open=True,
-                duration=10000,
-                action="OK"
-            )
-        )
+        show_snackbar_message(f"Running automation on your {driver_name} browser...")
 
-        b = Browser(e.control.data)
+        with Browser(driver_name) as browser:
 
-        col.controls.append(ft.Text(f"Starting Automation at {time.strftime('%H:%M:%S')}"))
-        page.update()
+            col.controls.append(ft.Text(f"Starting Automation at {time.strftime('%H:%M:%S')}"))
+            page.update()
 
-        logs = utils.start_automation(b, src_path, dst_path)
+            logs = utils.start_automation(browser, page, paths.src_path, paths.dst_path)
 
         # show logs on UI
         if logs:
             for j in logs:
-                col.controls.append(ft.Text(j))
+                col.controls.append(ft.Text(j, selectable=True))
                 page.update()
 
         col.controls.append(
@@ -89,20 +77,13 @@ def main(page: ft.Page):
             )
         )
 
-        page.show_snack_bar(
-            ft.SnackBar(
-                ft.Text(
-                    f"- {time.strftime('%H:%M %p')} | Automation completed. Check Result file for the results."),
-                open=True,
-                duration=10000,
-                action="OK"
-            )
-        )
+        show_snackbar_message(
+            f"- {time.strftime('%H:%M %p')} | Automation completed. Check Result file for the results.")
 
         # make the window visible by bringing it to the front, to let the user know the execution is done
         page.window_to_front()
-        page.splash.visible = False
         row.disabled = False
+        page.window_progress_bar = 0
         page.update()
 
     def copy_all_logs(e):
@@ -117,7 +98,7 @@ def main(page: ft.Page):
 
         print(x)
         page.set_clipboard(x)
-        page.show_snack_bar(ft.SnackBar(ft.Text(f"Copied logs to clipboard!"), duration=10000, action="OK"))
+        show_snackbar_message("Copied logs to clipboard!")
 
     def delete_all_logs(e):
         """
@@ -127,7 +108,24 @@ def main(page: ft.Page):
         """
         col.controls.clear()
         page.update()
-        page.show_snack_bar(ft.SnackBar(ft.Text(f"All logs were deleted!"), duration=10000, action="OK"))
+        show_snackbar_message("All logs were deleted!")
+
+    def show_snackbar_message(text: str = "Message:", duration: int = 6000):
+        """
+        Helper function that displays a snackbar message to the user.
+
+        :param text: str: the text of the snackbar message
+        :param duration: int: the duration of the snackbar message
+        """
+        page.show_snack_bar(
+            ft.SnackBar(
+                ft.Text(text),
+                duration=duration,
+                show_close_icon=True,
+                behavior=ft.SnackBarBehavior.FLOATING,
+                dismiss_direction=ft.DismissDirection.DOWN
+            )
+        )
 
     fp = ft.FilePicker(on_result=fp_result)
     page.overlay.append(fp)
@@ -193,8 +191,8 @@ def main(page: ft.Page):
         ),
         row := ft.Row(
             controls=[
-                ft.OutlinedButton("Run Automation on Edge", on_click=start_automation, data="edge"),
-                ft.OutlinedButton("Run Automation on Chrome", on_click=start_automation, data="chrome")
+                ft.OutlinedButton("Run Automation on Edge", on_click=lambda e: start_automation("edge")),
+                ft.OutlinedButton("Run Automation on Chrome", on_click=lambda e: start_automation("chrome"))
             ],
             disabled=True,
             alignment=ft.MainAxisAlignment.SPACE_EVENLY
@@ -215,7 +213,7 @@ def main(page: ft.Page):
                 ],
                 horizontal_alignment=ft.CrossAxisAlignment.STRETCH,
                 auto_scroll=True,
-                scroll="hidden"
+                scroll=ft.ScrollMode.HIDDEN
             ),
             alignment=ft.alignment.top_left,
         ),
@@ -236,9 +234,12 @@ def main(page: ft.Page):
                     color=ft.colors.LIME_50
                 )
             ],
-            alignment=ft.MainAxisAlignment.START
+            alignment=ft.MainAxisAlignment.SPACE_EVENLY
         )
     )
 
 
-ft.app(main)
+ft.app(
+    main,
+    view=ft.AppView.FLET_APP_HIDDEN
+)
